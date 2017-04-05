@@ -2,11 +2,12 @@
 
 import detectusb
 
-monThread = detectusb.MonitorThread()
+
+def usbCB(path):
+	print(path)
+
+
+monThread = detectusb.MonitorThread(usbCB)
 
 while True:
-	if detectusb.NewDevice == None:
 		pass
-	else:
-		print(detectusb.NewDevice)
-		detectusb.NewDevice = None

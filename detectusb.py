@@ -21,7 +21,8 @@ class USBMonitor:
 		self.monitor.start()
 
 class MonitorThread(object):
-	def __init__(self):
+	def __init__(self,cb):
+		self.cb=cb
 		self.usbMon = USBMonitor()
 		thread = threading.Thread(target=self.run,args=())
 		thread.daemon = True
@@ -48,6 +49,7 @@ class MonitorThread(object):
 										#print(p.mountpoint)
 										global NewDevice
 										NewDevice = p.mountpoint
+										self.cb(p.mountpoint)
 						ls.close()
 
 
