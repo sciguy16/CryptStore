@@ -108,11 +108,11 @@ def decrypt(key, input_filename, output_dir):
     os.remove(tar_name)
 
 
-key = '0123456789abcdef'
+key = KeyGen.GenerateKey(16*4, "This","Is","A test")
 plaintext = "plaintext.txt"
-plaintext = "test_files/"
+#plaintext = "test_files/"
 enc_file = "cyphertext"
-outdir = "mydir/"
+outdir = "outdir/"
 encrypt(key, plaintext, enc_file)
 
 decrypt(key, enc_file, outdir)
