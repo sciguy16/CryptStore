@@ -16,7 +16,7 @@ def GenerateKey(length, *args):
         mask |= (1<< i)
 
     #Return key
-    return (int(key,16) & mask)
+    return hex((int(key,16) & mask))[2:]
 
 # Uncomment to test
-# print(GenerateKey(256,"Josh","is", "Very cool"))
+print(GenerateKey(16*4,"Josh","is", "Very cool"))

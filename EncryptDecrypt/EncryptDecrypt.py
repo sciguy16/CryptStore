@@ -6,6 +6,8 @@ from Crypto.Cipher import AES
 import uuid
 import tarfile
 
+import KeyGen
+
 chunksize=64*1024 #Always use this chunksize
 
 def getFileSize(fileobject):
@@ -33,7 +35,7 @@ def encrypt_file(key, infile, outfile, chunksize):
             chunksize must be divisible by 16.
     """
 
-    iv = ''.join(chr(random.randint(0, 0xFF)) for i in range(16))
+#    iv = ''.join(chr(random.randint(0, 0xFF)) for i in range(16))
     iv = bytes([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])
     encryptor = AES.new(key, AES.MODE_CBC, iv)
 
@@ -71,59 +73,51 @@ def decrypt_file(key, infile, outfile, chunksize):
 
 
 def encrypt(key, input_filename, output_filename):
-    isfolder = os.path.isdir(input_filename)
-    print(isfolder)
-    if isfolder:
-        #Create temporary file and tar the directory into it
-        tar_name = str(uuid.uuid4())
-        tarhandle = tarfile.open(tar_name, "w")
-        tarhandle.add(input_filename, '.')
-        tarhandle.close()
-        infile = open(tar_name, "rb")
 
-    else:
-        infile = open(input_filename, 'rb')
+    #Create temporary file and tar the directory into it
+    tar_name = str(uuid.uuid4())
+    tarhandle = tarfile.open(tar_name, "w")
+
+    tarhandle.add(input_filename)
+
+    tarhandle.close()
+    infile = open(tar_name, "rb")
 
     outfile = open(output_filename, 'wb')
     encrypt_file(key, infile, outfile, chunksize)
 
-    if isfolder:
-        os.remove(tar_name) #Remove temporary file
-        return 'folder'
-    else:
-        return 'file'
+
+    os.remove(tar_name) #Remove temporary file
 
 
-def decrypt(key, input_filename, output_filename, isfolder):
+
+def decrypt(key, input_filename, output_dir):
     input = open(input_filename, 'rb')
 
-    if isfolder:
-        tar_name = str(uuid.uuid4())
-        output = open(tar_name, 'wb')
-    else:
-        output = open(output_filename, 'wb')
+
+    tar_name = str(uuid.uuid4())
+    output = open(tar_name, 'wb')
+
 
     decrypt_file(key, input, output, chunksize)
 
     output.close()
 
-    if isfolder:
-        tar = tarfile.open(tar_name)
-        tar.extractall(path=output_filename)
-        os.remove(tar_name)
+    tar = tarfile.open(tar_name)
+    tar.extractall(path=output_dir)
+    os.remove(tar_name)
 
 
 key = '0123456789abcdef'
-#plaintext = "plaintext.txt"
-plaintext = "./test_files"
-cyphertext = "cyphertext.txt"
-#plaintext_out = "plaintext_out.txt"
-plaintext_out = "mydir/"
-encrypt(key, plaintext, cyphertext)
+plaintext = "plaintext.txt"
+plaintext = "test_files/"
+enc_file = "cyphertext"
+outdir = "mydir/"
+encrypt(key, plaintext, enc_file)
 
-decrypt(key, cyphertext, plaintext_out, True)
+decrypt(key, enc_file, outdir)
 
 #Check input and output are identical
 
-import filecmp
-assert(filecmp.cmp(plaintext, plaintext_out))
+#import filecmp
+#assert(filecmp.cmp(plaintext, plaintext_out))
