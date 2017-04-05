@@ -3,7 +3,7 @@
 import os, random, struct
 from Crypto.Cipher import AES
 
-def encrypt_file(key, in_filename, out_filename=None, chunksize=64*1024):
+def encrypt_file(key, in_file, out_file, chunksize):
     """ Encrypts a file using AES (CBC mode) with the
         given key.
 
@@ -24,8 +24,6 @@ def encrypt_file(key, in_filename, out_filename=None, chunksize=64*1024):
             sizes can be faster for some files and machines.
             chunksize must be divisible by 16.
     """
-    if not out_filename:
-        out_filename = in_filename + '.enc'
 
     iv = ''.join(chr(random.randint(0, 0xFF)) for i in range(16))
     iv = bytes([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])
@@ -42,7 +40,7 @@ def encrypt_file(key, in_filename, out_filename=None, chunksize=64*1024):
                 if len(chunk) == 0:
                     break
                 elif len(chunk) % 16 != 0:
-                    chunk += ' ' * (16 - len(chunk) % 16)
+                    chunk += (' ' * (16 - len(chunk) % 16)).encode('utf-8')
 
                 outfile.write(encryptor.encrypt(chunk))
 
@@ -73,9 +71,10 @@ def decrypt_file(key, in_filename, out_filename=None, chunksize=24*1024):
 
 
 key = '0123456789abcdef'
-plaintext = "plaintext.txt"
+plaintext = "random.bin"
 cyphertext = "cyphertext.txt"
 plaintext_out = "plaintext_out.txt"
 chunksize=64*1024
 
 encrypt_file(key, plaintext, cyphertext, chunksize)
+decrypt_file(key, cyphertext, plaintext_out, chunksize)
