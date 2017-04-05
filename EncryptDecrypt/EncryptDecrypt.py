@@ -4,6 +4,7 @@ import os, random, struct
 from Crypto.Cipher import AES
 
 import tempfile
+import tarfile
 
 chunksize=64*1024 #Always use this chunksize
 
@@ -71,10 +72,23 @@ def decrypt_file(key, infile, outfile, chunksize):
 
 def encrypt(key, input_filename, output_filename):
     isfolder = os.path.isdir(input_filename)
+    print(isfolder)
+    if isfolder:
+        #Create tar of directory in RAM
+        tmp = tempfile.TemporaryFile()
+#        tarhandle = tarfile.open(fileobj=tmp, mode='w:')
+        tarhandle = tarfile.open("test.tar", "w")
+        tarhandle.add(input_filename, '.')
+        tarhandle.close()
+        tmp.flush()
+        tmp.seek(0)
+        infile = tmp
 
-    input = open(input_filename, 'rb')
-    output = open(output_filename, 'wb')
-    encrypt_file(key, input, output, chunksize)
+    else:
+        infile = open(input_filename, 'rb')
+
+    outfile = open(output_filename, 'wb')
+    encrypt_file(key, infile, outfile, chunksize)
 
     if isfolder:
         return 'folder'
@@ -89,7 +103,8 @@ def decrypt(key, input_filename, output_filename):
 
 
 key = '0123456789abcdef'
-plaintext = "plaintext.txt"
+#plaintext = "plaintext.txt"
+plaintext = "./test_files"
 cyphertext = "cyphertext.txt"
 plaintext_out = "plaintext_out.txt"
 
