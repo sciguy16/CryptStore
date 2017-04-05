@@ -18,5 +18,5 @@ def GenerateKey(length, *args):
     #Return key
     return (int(key,16) & mask)
 
-
-print(GenerateKey(256,"Josh","is", "Very cool"))
+# Uncomment to test
+# print(GenerateKey(256,"Josh","is", "Very cool"))
