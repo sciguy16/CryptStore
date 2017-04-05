@@ -3,7 +3,7 @@
 import os, random, struct
 from Crypto.Cipher import AES
 
-import tempfile
+import uuid
 import tarfile
 
 chunksize=64*1024 #Always use this chunksize
@@ -74,15 +74,12 @@ def encrypt(key, input_filename, output_filename):
     isfolder = os.path.isdir(input_filename)
     print(isfolder)
     if isfolder:
-        #Create tar of directory in RAM
-        tmp = tempfile.TemporaryFile()
-#        tarhandle = tarfile.open(fileobj=tmp, mode='w:')
-        tarhandle = tarfile.open("test.tar", "w")
+        #Create temporary file and tar the directory into it
+        tar_name = str(uuid.uuid4())
+        tarhandle = tarfile.open(tar_name, "w")
         tarhandle.add(input_filename, '.')
         tarhandle.close()
-        tmp.flush()
-        tmp.seek(0)
-        infile = tmp
+        infile = open(tar_name, "rb")
 
     else:
         infile = open(input_filename, 'rb')
@@ -91,27 +88,42 @@ def encrypt(key, input_filename, output_filename):
     encrypt_file(key, infile, outfile, chunksize)
 
     if isfolder:
+        os.remove(tar_name) #Remove temporary file
         return 'folder'
     else:
         return 'file'
 
 
-def decrypt(key, input_filename, output_filename):
+def decrypt(key, input_filename, output_filename, isfolder):
     input = open(input_filename, 'rb')
-    output = open(output_filename, 'wb')
+
+    if isfolder:
+        tar_name = str(uuid.uuid4())
+        output = open(tar_name, 'wb')
+    else:
+        output = open(output_filename, 'wb')
+
     decrypt_file(key, input, output, chunksize)
+
+    output.close()
+
+    if isfolder:
+        tar = tarfile.open(tar_name)
+        tar.extractall(path=output_filename)
+        os.remove(tar_name)
 
 
 key = '0123456789abcdef'
 #plaintext = "plaintext.txt"
 plaintext = "./test_files"
 cyphertext = "cyphertext.txt"
-plaintext_out = "plaintext_out.txt"
-
+#plaintext_out = "plaintext_out.txt"
+plaintext_out = "mydir/"
 encrypt(key, plaintext, cyphertext)
 
-decrypt(key, cyphertext, plaintext_out)
+decrypt(key, cyphertext, plaintext_out, True)
 
 #Check input and output are identical
+
 import filecmp
 assert(filecmp.cmp(plaintext, plaintext_out))
